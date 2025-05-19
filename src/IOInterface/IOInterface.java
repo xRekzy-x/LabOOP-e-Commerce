@@ -61,7 +61,7 @@ public class IOInterface {
     int i=0;
     for (Object obj : objectList) {
         i++;
-        if ("Customer".equalsIgnoreCase(listType) && obj instanceof User) {
+        if ("Customer".equalsIgnoreCase(listType) && obj instanceof User&&userRole.equals("admin")) {
             System.out.println("("+i+") "+((User) obj).toString());
         } else if ("Product".equalsIgnoreCase(listType) && obj instanceof Product) {
             System.out.println("("+i+") "+((Product) obj).toString());

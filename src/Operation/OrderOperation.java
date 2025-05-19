@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 public class OrderOperation {
+    private Stage stage=null;
     private static OrderOperation instance;
     private OrderOperation(){}
     public static OrderOperation getInstance(){
@@ -132,14 +133,13 @@ public class OrderOperation {
         }
     }
     public void generateSingleCustomerConsumptionFigure(String customerId) {
-        //ConsumptionFigure.showChart(customerId);
         Platform.runLater(() -> {
-            Stage stage = new Stage();
+            stage = new Stage();
             stage.setTitle("Consumption");
             String title;
             if(customerId==null) title="Consumption of every customers";
             else title = "Consumption each customer";
-            BarChart<String, Number> barChart = DataControl.creataBarChart(title, "consumer", "consumption");
+            BarChart<String, Number> barChart = DataControl.creataBarChart(title, "Month", "consumption");
             List<Double> arr = new ArrayList<>();
             List<Order> orders = DataControl.readAllOrders();
             List<String> months = new ArrayList<>();
@@ -158,25 +158,21 @@ public class OrderOperation {
                     }
                 }
             }
+            barChart.getData().clear();
             barChart.getData().add(DataControl.assignValueToBarChart("Money spent on purchasing",months,arr,null,0));
             StackPane root = new StackPane(barChart);
             DataControl.showGraph(root, stage);
             if(customerId==null) DataControl.saveGraph("Consumption_Figure_For_All", stage.getScene());
             else DataControl.saveGraph("Consumption_Figure_For_Single", stage.getScene());
+            stage.setOnCloseRequest(e -> stage= null);
         });
     }
     public void generateAllCustomersConsumptionFigure() {
-        //ConsumptionFigure.showChart(null);
-        // Platform.runLater(() -> {
-            
-        // });
         generateSingleCustomerConsumptionFigure(null);
-    
     }
     public void generateAllTop10BestSellersFigure() {
-        //BestSellerFigure.showChart();
         Platform.runLater(() -> {
-            Stage stage = new Stage();
+            stage = new Stage();
             stage.setTitle("BestSeller");
             BarChart<String, Number> barChart = DataControl.creataBarChart("Top 10 best-selling products", "Product", "Number of products");
             List<Integer> arr = new ArrayList<>();
@@ -190,10 +186,12 @@ public class OrderOperation {
             for(Order order : orders){ 
                 productName.add(order.getProductID());
             }
-            barChart.getData().add(DataControl.assignValueToBarChart("Money spent on purchasing",productName,arr,"descending",10));
+            barChart.getData().clear();
+            barChart.getData().add(DataControl.assignValueToBarChart("Products",productName,arr,"descending",10));
             StackPane root = new StackPane(barChart);
             DataControl.showGraph(root, stage);
             DataControl.saveGraph("Best_Sellers", stage.getScene());
+            stage.setOnCloseRequest(e -> stage= null);
         });
     }
     public void deleteAllOrders(){

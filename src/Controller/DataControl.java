@@ -28,6 +28,7 @@ import Model.Customer;
 import Model.Order;
 import Model.Product;
 import Model.User;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
@@ -458,5 +459,16 @@ public class DataControl {
         } catch (InterruptedException e) {
             io.printErrorMessage("sleep in DataControl", e.getMessage());
         }
+    }
+    public static void hiddenWindow(){
+        Platform.runLater(() -> {
+            Stage dummyStage = new Stage();
+            dummyStage.setOpacity(0); // ẩn
+            dummyStage.setWidth(1);
+            dummyStage.setHeight(1);
+            dummyStage.setX(-100);
+            dummyStage.setY(-100);
+            dummyStage.show();
+        });
     }
 }

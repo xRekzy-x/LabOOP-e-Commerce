@@ -1,4 +1,5 @@
 package MainControl;
+import java.util.ArrayList;
 import java.util.List;
 import Controller.DataControl;
 import IOInterface.IOInterface;
@@ -18,6 +19,9 @@ public class Test  {
         DataControl.sleep(1);
         DataControl.readAllUsers();
         DataControl.readAllOrders();
+        DataControl.readAllProducts();
+        AdminOperation adminOp = AdminOperation.getInstance();
+        adminOp.registerAdmin();
         mainInterface();
         }
         
@@ -60,6 +64,10 @@ public class Test  {
             case "3":
                 io.printMessage("bye");
                 System.exit(0);
+                break;
+            default:
+                mainInterface();
+                break;
         }
     }
     private static void customerInterface(Customer user){
@@ -71,17 +79,33 @@ public class Test  {
         OrderOperation orderOp = OrderOperation.getInstance();
         io.customerMenu();
         String[] inputCustomerMenu = io.getUserInput("choose from 1 to 6", 2);
-        if (inputCustomerMenu[0].equals("3") &&("keyword".equals(inputCustomerMenu[1]) || inputCustomerMenu[1] == null)) {
-            showProduct(user);
+        if (inputCustomerMenu.length < 2 || inputCustomerMenu[1] == null) {
+            inputCustomerMenu[1]="";
+        }
+        if (inputCustomerMenu[0].equals("3")){
+            if("keyword".equals(inputCustomerMenu[1]) || "".equals(inputCustomerMenu[1])) {
+                showProduct(user);
+            }
+            else{
+                io.printMessage("Invalid choice!");
+                customerInterface(user);
+            }
         }
         switch (inputCustomerMenu[0]) {
             case "1":
                 List<User> allCus = DataControl.readAllCustomers();
-                for(User cus:allCus){
+                for(int i=0;i<allCus.size();i++){
+                    Customer cus = (Customer) allCus.get(i);
                     if(cus.getUserName().equals(user.getUserName())){ 
                         io.printMessage("=======================");
-                        io.printMessage(cus.toString());
+                        io.printObject(cus);
                         io.printMessage("=======================");
+                        io.printMessage("Username: "+cus.getUserName());
+                        io.printMessage("User ID: "+cus.getUserID());
+                        io.printMessage("User password: "+ userOp.decryptPassword(cus.getUserPassword()));
+                        io.printMessage("User register time: "+cus.getUserRegisterTime());
+                        io.printMessage("User email: "+cus.getUserEmail());
+                        io.printMessage("User mobile: "+cus.getUserMobile());
                     }
                 }
                 DataControl.sleep(2);
@@ -95,7 +119,8 @@ public class Test  {
                     String[] choice2 = io.getUserInput("(1) Update username\n"+
                                                         "(2) Update password\n"+
                                                         "(3) Update email\n"+
-                                                        "(4) Update mobile", 1);
+                                                        "(4) Update mobile\n"+
+                                                        "(5) Go back", 1);
                     switch (choice2[0]) {
                         case "1":
                             String[] choice2_1 = io.getUserInput("Enter new name: ", 1);
@@ -124,13 +149,19 @@ public class Test  {
                             if(isChanged) io.printMessage("Successfully changed your mobile to "+user.getUserMobile());
                             else io.printMessage("Fail! Your mobile is invalid");
                             break;
+                        case "5":
+                            customerInterface(user);
+                            break;
                         default:
+                            io.printMessage("Invalid choice");
                             break;
                         }
-                    cusOp.deleteCustomer(user.getUserID());
-                    DataControl.addLine("users", user.toString());
-                    choice2_5 = io.getUserInput("Press 'n' for a next update,'b' to go back", 1);
-                    if(choice2_5[0].equalsIgnoreCase("b")) customerInterface(user);
+                    if(isChanged){
+                        cusOp.deleteCustomer(user.getUserID());
+                        DataControl.addLine("users", user.toString());
+                        choice2_5 = io.getUserInput("Press 'n' for a next update,'b' to go back", 1);
+                        if(choice2_5[0].equalsIgnoreCase("b")) customerInterface(user);
+                    }
                 }
                 break;
             case "4"://show history order
@@ -147,7 +178,7 @@ public class Test  {
                     else{
                         List<Order> showOrder = orderList.getAllOrdersEachPage();
                         if(choice4[0].equalsIgnoreCase("n")||choice4[0].equalsIgnoreCase("p"))
-                            io.showList("admin", "order", showOrder, orderList.getCurrentPage(), orderList.getTotalPages());
+                            io.showList(user.getUserRole(), "order", showOrder, orderList.getCurrentPage(), orderList.getTotalPages());
                     }
                     choice4 = io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back", 1);
                     pageNum=afterGeneration(pageNum, orderList.getTotalPages(),choice4[0],user);
@@ -157,6 +188,7 @@ public class Test  {
                 orderOp.generateAllCustomersConsumptionFigure();
                 orderOp.generateSingleCustomerConsumptionFigure(user.getUserID());
                 orderOp.generateAllTop10BestSellersFigure();
+                DataControl.hiddenWindow();
                 io.printMessage("sucessfully generated 3 charts");
                 DataControl.sleep(2);
                 customerInterface(user);
@@ -165,6 +197,8 @@ public class Test  {
                 mainInterface();
                 break;
             default:
+                io.printMessage("Invalid choice!");
+                customerInterface(user);
                 break;
         }
     }
@@ -223,7 +257,7 @@ public class Test  {
                     else{
                         List<User> showCus = cusList.getAllCustomersEachPage();
                         if(choice3[0].equalsIgnoreCase("n")||choice3[0].equalsIgnoreCase("p"))
-                            io.showList("admin", "customer", showCus, cusList.getCurrentPage(), cusList.getTotalPages());
+                            io.showList(admin.getUserRole(), "customer", showCus, cusList.getCurrentPage(), cusList.getTotalPages());
                     }
                     choice3 = io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back, or a customer ID to view detail", 1);
                     pageNum=afterGeneration(pageNum, cusList.getTotalPages(),choice3[0],admin);
@@ -232,7 +266,9 @@ public class Test  {
                         List<User> allUsers = DataControl.readAllCustomers();
                         for(int i =0;i<allUsers.size();i++){
                             if(allUsers.get(i).getUserID().equals(choice3[0])){
-                                System.out.println("\n"+allUsers.get(i)+"\n");
+                                io.printMessage("\n");
+                                io.printObject(allUsers.get(i));
+                                io.printMessage("\n");
                                 foundUser=true;
                                 pageNum=1;
                             }
@@ -287,11 +323,11 @@ public class Test  {
                 proOp.generateCategoryFigure();
                 proOp.generateDiscountLikesCountFigure();
                 proOp.generateLikesCountFigure();
+                DataControl.hiddenWindow();
                 io.printMessage("successfully generated 4 graphs!");
                 adminInterface(admin);
                 break;
             case "7":
-                //io.printMessage("(1) Remove one customer\n(2) Remove all customers\n(3) Remove one product\n(4) Remove all products\n(5) Remove one order\n(6) Remove all orders");
                 String[] choice7 = new String[1];
                 boolean isRemoved = false;
                 do{
@@ -381,20 +417,70 @@ public class Test  {
         ProductListResult proList = new ProductListResult();
         String[] choice = new String[1];
         choice[0]="n";
+        boolean isKey=false;
         do{
             proList=proOp.getProductList(pageNum);
             if(proList==null){
                 io.printMessage("====The list is empty!====");
                 returnToInterface(user);
             } 
-            else{
+            else if(isKey==false){
                 List<Product> showPro = proList.getAllProductsEachPage();
                 if(choice[0].equalsIgnoreCase("n")||choice[0].equalsIgnoreCase("p"))
-                    io.showList("admin", "product", showPro, proList.getCurrentPage(), proList.getTotalPages());
+                    io.showList(user.getUserRole(), "product", showPro, proList.getCurrentPage(), proList.getTotalPages());
+                choice = io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back, or enter a keyword to search, or enter a product ID to search", 1);
+                pageNum=afterGeneration(pageNum, proList.getTotalPages(),choice[0],user); 
+                }
+           
+            if(!choice[0].equalsIgnoreCase("n")&&!choice[0].equalsIgnoreCase("p")){
+                isKey=true;
+                pageNum=1;
+                showProductByKeyWord(user, choice,pageNum);
             }
-            choice = io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back", 1);
-            pageNum=afterGeneration(pageNum, proList.getTotalPages(),choice[0],user); 
         }while(!choice[0].equalsIgnoreCase("b"));
+    }
+    private static void showProductByKeyWord(User user,String[] choice,int pageNum){
+        IOInterface io = IOInterface.getInstance();
+        ProductOperation proOp = ProductOperation.getInstance();
+        List<Product> showProKey = proOp.getProductListByKeyword(choice[0]);
+        List<Product> showProKeyPage = new ArrayList<>();
+        int size = showProKey.size();
+        if(size%10==0) size=(size/10);
+        else size=(size/10+1);
+        String[] choice2 = new String[1];
+        choice2[0]="n";
+        boolean isID=false;
+        do{
+            if(size<=0) size=1;
+            for(int i=1;i<=size;i++){
+                if(i==pageNum){
+                    List<Product> allPro = DataControl.readAllProducts();
+                    for(Product pro : allPro){
+                        if(pro.getProId().equals(choice[0])){
+                            io.printObject(pro);
+                            isID=true;
+                        }
+                    }
+                    if(isID==false){  
+                        int endIndex = Math.min((pageNum-1)*10+10,showProKey.size());
+                        showProKeyPage.clear();
+                        for(int k =(pageNum-1)*10;k<endIndex;k++){
+                            if(showProKey.get(k)!=null){
+                                showProKeyPage.add(showProKey.get(k));
+                            }   
+                        }
+                        if(showProKeyPage.isEmpty()) io.printMessage("No products!");
+                        else io.showList(user.getUserRole(), "product", showProKeyPage, pageNum, size);
+                    }
+                }
+            }
+            choice2=io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back, or enter a keyword to search", 1);
+            if(!choice2[0].equals("n")&&!choice2[0].equals("p")&&!choice2[0].equals("b")){
+                pageNum=1;
+                showProductByKeyWord(user, choice2, pageNum);
+            } 
+            pageNum = afterGeneration(pageNum, size, choice2[0], user);
+        }while(!choice2[0].equalsIgnoreCase("b"));
     }
     private static void returnToInterface(User user){
         if(user.getUserRole().equals("admin")) adminInterface((Admin)user);
