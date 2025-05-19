@@ -77,14 +77,22 @@ public class Test  {
         CustomerOperation cusOp = CustomerOperation.getInstance();
         UserOperation userOp = UserOperation.getInstance();
         OrderOperation orderOp = OrderOperation.getInstance();
+        ProductOperation proOp = ProductOperation.getInstance();
         io.customerMenu();
         String[] inputCustomerMenu = io.getUserInput("choose from 1 to 6", 2);
         if (inputCustomerMenu.length < 2 || inputCustomerMenu[1] == null) {
             inputCustomerMenu[1]="";
         }
         if (inputCustomerMenu[0].equals("3")){
-            if("keyword".equals(inputCustomerMenu[1]) || "".equals(inputCustomerMenu[1])) {
-                showProduct(user);
+            if(inputCustomerMenu[1]!=null){
+                if("".equals(inputCustomerMenu[1])) {
+                    showProduct(user);
+                }
+                if(proOp.getProductListByKeyword(inputCustomerMenu[1])!=null){
+                    String[] inp = new String[1];
+                    inp[0] = inputCustomerMenu[1];
+                    showProductByKeyWord(user, inp, 1);
+                }
             }
             else{
                 io.printMessage("Invalid choice!");
@@ -159,8 +167,11 @@ public class Test  {
                     if(isChanged){
                         cusOp.deleteCustomer(user.getUserID());
                         DataControl.addLine("users", user.toString());
-                        choice2_5 = io.getUserInput("Press 'n' for a next update,'b' to go back", 1);
-                        if(choice2_5[0].equalsIgnoreCase("b")) customerInterface(user);
+                        do{
+                            choice2_5 = io.getUserInput("Press 'n' for a next update,'b' to go back", 1);
+                            if(choice2_5[0].equalsIgnoreCase("b")) customerInterface(user);
+                        }while(!choice2_5[0].equals("b")&&!choice2_5[0].equals("n"));
+                        
                     }
                 }
                 break;
@@ -367,7 +378,7 @@ public class Test  {
                             break;
                         case "6":
                             orderOp.deleteAllOrders();
-                            io.printMessage("Sucessfully deleted all products");
+                            io.printMessage("Sucessfully deleted all orders");
                             break;
                         case "7":
                             adminInterface(admin);
@@ -474,7 +485,7 @@ public class Test  {
                     }
                 }
             }
-            choice2=io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back, or enter a keyword to search", 1);
+            choice2=io.getUserInput("Enter 'n' for next page, 'p' for previous page, 'b' to go back, or enter a keyword to search, or enter a product ID to search ", 1);
             if(!choice2[0].equals("n")&&!choice2[0].equals("p")&&!choice2[0].equals("b")){
                 pageNum=1;
                 showProductByKeyWord(user, choice2, pageNum);

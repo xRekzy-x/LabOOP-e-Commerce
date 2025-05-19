@@ -51,19 +51,19 @@ public class UserOperation {
         return password.toString();
     }
     public boolean checkUsernameExist(String userName) {
-        if(User.getRegistryByName(userName)!=null) return true;
+        if(userName!=null&&User.getRegistryByName(userName)!=null) return true;
         else return false;
     }
     public boolean validateUsername(String userName) {
-        if(!userName.matches("^[a-zA-Z_]{5,}$")) return false;//so sánh 5 ký tự xem có a-zA-Z_ ko
-        else return true;
+        if(userName!=null&&userName.matches("^[a-zA-Z_]{5,}$")) return true;//so sánh 5 ký tự xem có a-zA-Z_ ko
+        else return false;
     }
     public boolean validatePassword(String userPassword) {
-        if(!userPassword.matches("(?=.*[a-zA-Z])(?=.*[0-9]).{5,}")) return false;
+        if(userPassword!=null&&userPassword.matches("(?=.*[a-zA-Z])(?=.*[0-9]).{5,}")) return true;
         //có ^ và $ để kiểm tra toàn bộ chuỗi
         //.* để kiểm tra toàn bộ kí tự ở đằng sau
         //?= lookahead assertion
-        else return true;
+        else return false;
     }
     public User login(String userName, String userPassword){
         List<User> users = DataControl.readAllUsers();

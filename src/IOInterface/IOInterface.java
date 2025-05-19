@@ -34,27 +34,30 @@ public class IOInterface {
         return result;
     }
     public void mainMenu(){
+        System.out.println("\n=== Main Menu ===");
         System.out.println("(1) Login");
         System.out.println("(2) Register");
         System.out.println("(3) Quit");
     }
     public void adminMenu(){
+        System.out.println("\n=== Admin Menu ===");
         System.out.println("(1) Show products");
         System.out.println("(2) Add customers");
         System.out.println("(3) Show customers");
         System.out.println("(4) Show orders");
         System.out.println("(5) Generate test data");
-        System.out.println("(6) Generate all statiscal figure");
+        System.out.println("(6) Generate all statistical figures");
         System.out.println("(7) Delete all data");
         System.out.println("(8) Logout");
     
     }
     public void customerMenu(){
+        System.out.println("\n=== Customer Menu ===");
         System.out.println("(1) Show profile");
         System.out.println("(2) Update profile");
-        System.out.println("(3) Show products (user input could be \"3 keyword\" or \"3\")");
+        System.out.println("(3) Show products (or 3 keyword)");
         System.out.println("(4) Show history orders");
-        System.out.println("(5) Generate all consumption figure");
+        System.out.println("(5) Generate all consumption figures");
         System.out.println("(6) Logout");
     }
     public void showList(String userRole, String listType, List<?> objectList,int pageNumber, int totalPages) {
@@ -81,6 +84,10 @@ public class IOInterface {
         System.out.println(message);
     }
     public void printObject(Object targetObject) {
-        System.out.println(targetObject.toString());
+        if (targetObject != null) {
+            System.out.println(targetObject.toString());
+        } else {
+            System.out.println("[NULL object]");
+        }
     }
 }

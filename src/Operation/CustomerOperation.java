@@ -18,12 +18,12 @@ public class CustomerOperation {
         return instance;
     }
     public boolean validateEmail(String userEmail){
-        if(userEmail.matches("^(\\w){1,}(@)[a-z]{2,}(\\.)[a-z]{2,}$")) return true;
+        if(userEmail!=null&&userEmail.matches("^(\\w){1,}(@)[a-z]{2,}(\\.)[a-z]{2,}$")) return true;
         //\\w means any words(a-zA-Z0-9_)
         else return false;
     }
     public boolean validateMobile(String userMobile){
-        if(userMobile.matches("^0(3|4)[0-9]{8,}$")) return true;
+        if(userMobile!=null&&userMobile.matches("^0(3|4)[0-9]{8,}$")) return true;
         else return false;
     }
     public boolean registerCustomer(String userName,String userPassword,String userEmail,String userMobile){

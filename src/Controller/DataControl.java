@@ -135,18 +135,12 @@ public class DataControl {
         }
         return allUserPart;
     }
-    public static List<User> readUsersInRange(int start,int end){
-        List<User> users = new ArrayList<>();
-        List<User> allUsers = readAllUsers();
-        for(int i= start;i<=end;i++){
-            users.add(allUsers.get(i-1));
-        }
-        return users;
-    }
     public static List<User> readAllCustomers(){
         List<User> customers= readAllUsers();
-        for(int i =0; i <customers.size();i++){
-            if(customers.get(i).toString().matches(".*\"user_role\":\"admin\".*")) customers.remove(i);
+        for(int i =customers.size()-1; i >=0;i--){
+            if(customers.get(i).getUserRole().equals("admin")){
+                customers.remove(i);
+            } 
         }
         return customers;
     }
