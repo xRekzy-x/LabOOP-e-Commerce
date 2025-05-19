@@ -1,15 +1,6 @@
 package Model;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import Controller.DataControl;
 import Operation.UserOperation;
@@ -119,64 +110,54 @@ public abstract class User{
     //         throw new IllegalArgumentException("Invalid userRegisterTime format. Must be DD-MM-YYYY_HH:MM:SS");
     //     this.userRegisterTime=userRegisterTime;
     // }
-    public void saveUser(){
-        String userData = this.toString();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\rosto\\practice\\tutorial\\loopex\\javalab\\e_commerce\\data\\users.txt", true))) {  // true for appending data
-                writer.write(userData);  // Convert user object to string and write
-                writer.newLine();              // Add a new line after each user's data
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    public void extractProductsFromFile(){
-        String content=null;
-       // Gson gson = new Gson();
-        String line;
+    // public void saveUser(){
+    //     String userData = this.toString();
+    //     try (BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\rosto\\practice\\tutorial\\loopex\\javalab\\e_commerce\\data\\users.txt", true))) {  // true for appending data
+    //             writer.write(userData);  
+    //             writer.newLine();             
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
+    // public void extractProductsFromFile(){
+    //     String content=null;
+    //    // Gson gson = new Gson();
+    //     String line;
         
-         try(BufferedReader reader =  new BufferedReader(new FileReader("data/kkk.txt"))){
-            while ((line = reader.readLine()) != null) {
-            String[] parts = line.split("\"");
-            String proId = parts[3].trim();
-            String proModel=parts[7].trim();
-            String proCategory=parts[11].trim();
-            String proName = parts[15].trim();
+    //      try(BufferedReader reader =  new BufferedReader(new FileReader("data/kkk.txt"))){
+    //         while ((line = reader.readLine()) != null) {
+    //         String[] parts = line.split("\"");
+    //         String proId = parts[3].trim();
+    //         String proModel=parts[7].trim();
+    //         String proCategory=parts[11].trim();
+    //         String proName = parts[15].trim();
            
-            content = parts[18].trim().replaceAll(":", "");
-            content = content.replaceAll(",","");
-            Double proCurrentPrice = Double.parseDouble(content);
+    //         content = parts[18].trim().replaceAll(":", "");
+    //         content = content.replaceAll(",","");
+    //         Double proCurrentPrice = Double.parseDouble(content);
             
-            //String proRawPrice = parts[20].replaceAll(":", "");
-            content = parts[20].trim().replaceAll(":", "");
-            content = content.replaceAll(",","");
-            Double proRawPrice = Double.parseDouble(content);
+    //         //String proRawPrice = parts[20].replaceAll(":", "");
+    //         content = parts[20].trim().replaceAll(":", "");
+    //         content = content.replaceAll(",","");
+    //         Double proRawPrice = Double.parseDouble(content);
 
-            //String proDiscount = parts[22].replaceAll(":", "");
-            content = parts[22].trim().replaceAll(":", "");
-            content = content.replaceAll(",","");
-            Double proDiscount = Double.parseDouble(content);
-           // String proLikesCount = parts[24].replaceAll(":", "");
-            content = parts[24].trim().replaceAll(":", "");
-            content = content.replaceAll("}","");
-            int proLikesCount = Integer.parseInt(content);
+    //         //String proDiscount = parts[22].replaceAll(":", "");
+    //         content = parts[22].trim().replaceAll(":", "");
+    //         content = content.replaceAll(",","");
+    //         Double proDiscount = Double.parseDouble(content);
+    //        // String proLikesCount = parts[24].replaceAll(":", "");
+    //         content = parts[24].trim().replaceAll(":", "");
+    //         content = content.replaceAll("}","");
+    //         int proLikesCount = Integer.parseInt(content);
             
-            Product product = new Product(proId, proModel, proCategory, proName, proCurrentPrice, proRawPrice, proDiscount, proLikesCount);
-            }
-           // String[] parts=line.split("\"");
-           
-            
-            //content = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
-        // try(BufferedWriter writer = new BufferedWriter(new FileWriter("data\\products.txt",true))){
-        //     writer.write(content);
-        //    // writer.newLine();
-        // }
-        // catch(IOException e){
-        //     e.printStackTrace();
-        // }
-    }
+    //         Product product = new Product(proId, proModel, proCategory, proName, proCurrentPrice, proRawPrice, proDiscount, proLikesCount);
+    //         }
+          
+    //     }
+    //     catch(IOException e){
+    //         e.printStackTrace();
+    //     }
+    // }
     public String toString(){
         return "{\"user_id\":\""+userId+"\",\"user_name\":\""+userName+"\",\"user_password\":\""+userPassword+"\",\"user_register_time\":\""+userRegisterTime+"\",\"user_role\":\""+userRole+"\"";
     }

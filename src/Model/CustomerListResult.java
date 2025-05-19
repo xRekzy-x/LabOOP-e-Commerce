@@ -7,15 +7,13 @@ import Controller.DataControl;
 
 public class CustomerListResult {
     private static List<User> CustomerEachPage = new ArrayList<>();
-    private int currentPage;
-    private int totalPages;
     public CustomerListResult(){}
     public String toString(){
         StringBuilder content= new StringBuilder();
         for(int i =0;i<CustomerEachPage.size();i++){
             content.append("\n ("+(i+1)+") "+CustomerEachPage.get(i).toString());
         }
-        content.append("\n"+getCurrentPage()+"/"+getTotalPages());
+        //content.append("\n"+getCurrentPage()+"/"+getTotalPages());
         return content.toString();
     }
     public static User getCustomer(String userName){

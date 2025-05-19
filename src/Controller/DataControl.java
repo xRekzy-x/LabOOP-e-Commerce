@@ -7,61 +7,64 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import IOInterface.IOInterface;
 import Model.Admin;
 import Model.Customer;
+import Model.Order;
 import Model.Product;
 import Model.User;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class DataControl {
     private DataControl instance;
-    private DataControl(){
-    }
+    private static IOInterface io = IOInterface.getInstance();
+    private DataControl(){}
     public DataControl getInstance(){
         if(instance==null){
             instance = new DataControl();
         }
         return instance;
     }
-    public static List<String> readAllUsersString(){
-        List<String> users = new ArrayList<>();
-        String line;
-        try (BufferedReader reader = new BufferedReader(new FileReader(Paths.get("data", "users.txt").toFile()))) {
-            while((line=reader.readLine())!=null){
-                users.add(line);
-            }
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
-        return users;
+    private static String deleteUnrelatedThings(String line){
+        line = line.replaceAll("\"", "");
+        line = line.replaceAll("\\{", "");
+        line = line.replaceAll("\\}", "");
+        return line;
     }
     public static List<String> transformLines(String file){
         List<String> allUsers = new ArrayList<>();
         String line;
         try (BufferedReader reader = new BufferedReader(new FileReader("data/"+file+".txt"))) {
             while((line=reader.readLine())!=null){
-                line = line.replaceAll("\"", "");
-                line = line.replaceAll("\\{", "");
-                line = line.replaceAll("\\}", "");
-                line = line.replaceAll("\":\"", "");
+                line = deleteUnrelatedThings(line);
                 allUsers.add(line);
             }
         }
         catch(IOException e){
-            e.printStackTrace();
+            io.printErrorMessage("transformLines in DataControl class","the format is inappropriate!"+e.getMessage());
         }
         return allUsers;
     } 
@@ -74,12 +77,9 @@ public class DataControl {
         String line;
         try (BufferedReader reader = new BufferedReader(new FileReader(Paths.get("data", "users.txt").toFile()))) {
             while((line=reader.readLine())!=null){
-                System.out.println(line);
-                line = line.replaceAll("\"", "");
-                line = line.replaceAll("\\{", "");
-                line = line.replaceAll("\\}", "");
+                line = deleteUnrelatedThings(line);
                 String[] parts = line.split(",");
-                 if(parts.length<5) continue;
+                if(parts.length<5) continue;
                 String userName=delete(parts[1],"user_name:");
                 String userID = delete(parts[0],"user_id:");
                 String userPassword = delete(parts[2],"user_password:");
@@ -96,7 +96,7 @@ public class DataControl {
             }
         }
         catch(IOException e){
-            e.printStackTrace();
+            io.printErrorMessage("readAllUsers in DataControl", e.getMessage());
         }
         return allUsers;
     }
@@ -107,6 +107,7 @@ public class DataControl {
         String content;
         for(String user : allUsers){
             String[] parts = user.split(",");
+            if(parts.length<5) continue;
             if(part=="name"){
                 content=delete(parts[1],"user_name:");
                 allUserPart.add(content);
@@ -124,11 +125,13 @@ public class DataControl {
                 allUserPart.add(content);
             }
             else if(part=="role"){
-                    content=delete(parts[4],"user_role:");
-                    allUserPart.add(content);    
+                content=delete(parts[4],"user_role:");
+                allUserPart.add(content);    
+            }
+            else{
+                io.printErrorMessage("readAllUserParts in DataControl", "invalid part");
             }
         }
-        
         return allUserPart;
     }
     public static List<User> readUsersInRange(int start,int end){
@@ -146,29 +149,21 @@ public class DataControl {
         }
         return customers;
     }
-    public static List<User> readCustomersInRange(int start, int end){
-        List<User> allCustomers = readAllCustomers();
-        List<User> customers = new ArrayList<>();
-        for(int i = start;i<=end;i++){
-            customers.add(allCustomers.get(i-1));
-        }
-        return customers;
-    }
     public static <T> void addLine(String file,T line){
         try(BufferedWriter writer = new BufferedWriter(new FileWriter("data/"+file+".txt",true))){
-            writer.write(line.toString());     // JSON string from toString()
             writer.newLine(); 
+            writer.write(line.toString());     
         }   
         catch(IOException e){
-            e.printStackTrace();
+            io.printErrorMessage("addLine in DataControl", e.getMessage());
         }
     }
     public static void deleteAll(String file){
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter("data/"+file+".txt",true))){
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter("data/"+file+".txt",false))){
             writer.write("");     
         }   
         catch(IOException e){
-            e.printStackTrace();
+            io.printErrorMessage("deleteAll in DataControl", e.getMessage());
         }
     }
     public static boolean deleteOneLine (String file,String id){
@@ -178,6 +173,7 @@ public class DataControl {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\"");
+                if(parts.length<4) continue;
                 if (parts[3].trim().equals(id)) {
                     if(file=="users"){
                         if(parts[19].trim().equals("customer")){
@@ -185,9 +181,13 @@ public class DataControl {
                             continue;
                         }
                     }
-                    else if(file=="products"){
+                    else if(file=="products"||file=="orders"){
                         isDeleted=true;
                         continue;
+                    }
+                    
+                    else{
+                        io.printErrorMessage("deleteOneLine in DataControl", "invalid part");
                     }
             }
                 updatedLines.add(line);
@@ -198,7 +198,7 @@ public class DataControl {
                     
          }
         catch(IOException e){
-            e.printStackTrace();
+            io.printErrorMessage("deleteOneLine", e.getMessage());
         }
         return isDeleted;
     }
@@ -208,9 +208,7 @@ public class DataControl {
         String line;
         try(BufferedReader reader= new BufferedReader(new FileReader("data/products.txt"))){
             while((line=reader.readLine())!=null){
-                line = line.replaceAll("\"", "");
-                line = line.replaceAll("\\{", "");
-                line = line.replaceAll("\\}", "");
+                line = deleteUnrelatedThings(line);
                 String[] parts = line.split(",");
                 if(parts.length<8) continue;
                 String proModel=delete(parts[1],"pro_model:");
@@ -227,7 +225,7 @@ public class DataControl {
             }
         }
         catch(IOException e){
-            e.printStackTrace();
+            io.printErrorMessage("readAllProducts", e.getMessage());
         }
         return allProducts;
     }
@@ -270,33 +268,40 @@ public class DataControl {
                 content=delete(parts[7],"pro_likes_counts:");
                 allProductPart.add(content);    
             }
+            else{
+                io.printErrorMessage("readAllProductsPart in DataControl", "invalid part");
+            }
         }
         return allProductPart;
     }
-    public static Map<String,Integer> assignValueToMap(String type, int[] increment){
+    public static Map<String,Integer> assignValueToMap(String type, int[] increment,int columns){
         List<String> allElements = DataControl.readAllProductsPart(type);
         Map<String,Integer> elementsCount = new HashMap<>();
         int i =0;
         for(String element: allElements){
-            if(elementsCount.get(element)==null) elementsCount.put(element, 0);
-            if(element==null) element="unknown";
-            
-            else if(elementsCount.containsKey(element)||element.trim().isEmpty()){
-                elementsCount.put(element,elementsCount.get(element)+increment[i]);
+            if(i<columns||columns==0){
+                if(elementsCount.get(element)==null) elementsCount.put(element, 0);
+                if(element==null) element="unknown";
+                
+                else if(elementsCount.containsKey(element)||element.trim().isEmpty()){
+                    elementsCount.put(element,elementsCount.get(element)+increment[i]);
+                }
+                i++;
             }
-            i++;
         }
         i=0;
         return elementsCount;
     }
-    public static List<Map.Entry<String,Integer>> descendingSort(Map<String,Integer> categoriesCount){
-        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(categoriesCount.entrySet());
+    public static <T extends Number> List<Map.Entry<String, T>> Sorting(Map<String, T> categoriesCount,String DescendingOrAscending) {
+        List<Map.Entry<String, T>> entryList = new ArrayList<>(categoriesCount.entrySet());
         //create a new arrayList and fill instantly with categoriesCount.entrySet()
         //entrySet là 1 phần tử của map
-        entryList.sort(new Comparator<Map.Entry<String, Integer>>() {
+        entryList.sort(new Comparator<Map.Entry<String, T>>() {
         @Override
-        public int compare(Map.Entry<String, Integer> e1, Map.Entry<String, Integer> e2) {
-            return e2.getValue().compareTo(e1.getValue());
+        public int compare(Map.Entry<String, T> e1, Map.Entry<String, T> e2) {
+            //return e2.getValue().doubleValue().compareTo(e1.getValue().doubleValue());
+            if(DescendingOrAscending.equalsIgnoreCase("descending")) return Double.compare(e2.getValue().doubleValue(), e1.getValue().doubleValue());
+            else return Double.compare(e1.getValue().doubleValue(), e2.getValue().doubleValue());
             //cái trước > cái sau (e2>e1) thì dương, bằng thì 0, bé hơn thì âm
             //nếu âm thì không làm gì cả
             //nếu dương thì đảo vị trí
@@ -304,29 +309,17 @@ public class DataControl {
         });
         return entryList;
     }
-    public static List<Map.Entry<String,Integer>> ascendingSort(Map<String,Integer> categoriesCount){
-        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(categoriesCount.entrySet());
-        entryList.sort(new Comparator<Map.Entry<String, Integer>>() {
-        @Override
-        public int compare(Map.Entry<String, Integer> e1, Map.Entry<String, Integer> e2) {
-            return e1.getValue().compareTo(e2.getValue());
-        }
-        });
-        return entryList;
+    public static BarChart<String,Number> creataBarChart(String title,String x,String y){
+        CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setLabel(x);
+
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel(y);
+
+        BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
+        barChart.setTitle(title);
+        return barChart;
     }
-    // public static JFreeChart createBarChart(List<Map.Entry<String,Integer>> entryList,String title,String x_axis,String y_axis){
-    //     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-    //     for (Map.Entry<String, Integer> entry : entryList) {
-    //         dataset.addValue(entry.getValue(), "products", entry.getKey());
-    //     }
-    //     JFreeChart barChart = ChartFactory.createBarChart(
-    //             title,
-    //             x_axis,
-    //             y_axis,
-    //             dataset
-    //     );
-    //     return barChart;
-    // }
     public static void showGraph(StackPane root ,Stage stage){
         Scene scene = new Scene(root, 800, 600);
         stage.setScene(scene);
@@ -339,7 +332,131 @@ public class DataControl {
         try {
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
         } catch (IOException e) {
-            e.printStackTrace();
+            io.printErrorMessage("saveGraph", "cannot save graph"+e.getMessage());
+        }
+    }
+    public static List<Order> readAllOrders(){
+        Order.clearData();
+        List<Order> allOrders = new ArrayList<>();
+        String line;
+        try(BufferedReader reader= new BufferedReader(new FileReader("data/orders.txt"))){
+            while((line=reader.readLine())!=null){
+                line = deleteUnrelatedThings(line);
+                String[] parts = line.split(",");
+                if(parts.length<4) continue;
+                String orderId=delete(parts[0],"order_id:");
+                String userId = delete(parts[1],"user_id:");
+                String proId = delete(parts[2],"pro_id:");
+                String orderTime = delete(parts[3],"order_time:");
+                Order order = new Order(orderId, userId, proId, orderTime);
+                allOrders.add(order);
+            }
+        }
+        catch(IOException e){
+            io.printErrorMessage("readAllOrders in DataControl", e.getMessage());
+        }
+        return allOrders;
+    }
+    public static List<String> readAllOrdersPart(String part){
+        List<String> allOrdersPart = new ArrayList<>();
+        List<String> allOrders = transformLines("orders");
+        String content;
+        for(String order : allOrders){
+            String[] parts = order.split(",");
+            if(parts.length<4) continue;
+            else if(part=="order_id"){
+                content=delete(parts[0],"order_id:");
+                allOrdersPart.add(content);
+            }
+            else if(part=="user_id"){
+                content=delete(parts[1],"user_id:");
+                allOrdersPart.add(content);
+            }
+            else if(part=="pro_id"){
+                content=delete(parts[2],"pro_id:");
+                allOrdersPart.add(content);
+            }
+            else if(part=="order_time"){
+                content=delete(parts[3],"order_time:");
+                allOrdersPart.add(content);
+            }
+            else{
+                io.printErrorMessage("readAllOrdersPart in DataControl", "invalid part");
+            }
+        }
+        return allOrdersPart;
+    }
+    public static String getCurrentTime(){
+        return new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(new Date());
+    }
+    public static List<Order> readAllOrdersOfACustomer(String customerId){
+        List<Order> allOrders = readAllOrders();
+        List<Order> allOrdersOfACustomer = new ArrayList<>();
+        for(Order order : allOrders){
+            if(order.getUserID().equals(customerId)||customerId==null){ 
+                allOrdersOfACustomer.add(order);
+            }
+        }
+        return allOrdersOfACustomer;
+    }
+    public static String generateRandomTimeInYear(String before_Or_after,String Milestone,int year){
+        Milestone=Milestone.replace("_", "-");
+        String[] date = Milestone.split("-");
+        String[] clock = date[3].split(":");
+        LocalDateTime start;
+        LocalDateTime end;
+        if(before_Or_after.equals("after")){
+            start = LocalDateTime.of(Integer.parseInt(date[2]), Integer.parseInt(date[1]), Integer.parseInt(date[0]),Integer.parseInt(clock[0]),Integer.parseInt(clock[1]));
+            end = LocalDateTime.of(year, 12, 31, 23, 59);
+        }
+        else{
+            end = LocalDateTime.of(Integer.parseInt(date[2]), Integer.parseInt(date[1]), Integer.parseInt(date[0]),Integer.parseInt(clock[0]),Integer.parseInt(clock[1]));
+            start = LocalDateTime.of(year, 1, 1, 1, 1);
+        }
+        long startEpoch = start.toEpochSecond(ZoneOffset.UTC);
+        long endEpoch = end.toEpochSecond(ZoneOffset.UTC);
+
+        Random random = new Random();
+        long randomEpoch = startEpoch + (long) (random.nextDouble() * (endEpoch - startEpoch));
+        //random.nextDouble sinh ra số từ 0 tới 1 (luôn dưới hoặc bằng 100%)
+        return LocalDateTime.ofEpochSecond(randomEpoch, 0, ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("dd-MM-yyyy_HH:mm:ss"));
+    }
+    public static <T extends Number> XYChart.Series<String,Number> assignValueToBarChart(String nameOfData,List<String> x,List<T> y,String DescendingOrAscending,int columns){
+        Map<String, Double> data = new LinkedHashMap<>();
+
+        double valueNeedToAdd;
+        double currentValue;
+        for (int i =0;i<x.size();i++) {
+            valueNeedToAdd=y.get(i).doubleValue();
+            if(data.get(x.get(i))==null)
+                data.put(x.get(i),valueNeedToAdd);
+            else{
+                currentValue=data.get(x.get(i)).doubleValue();
+                data.put(x.get(i), (currentValue+valueNeedToAdd));
+            }
+        }
+        
+        List<Map.Entry<String,Double>> entryList;
+        if(DescendingOrAscending==null) entryList = new ArrayList<>(data.entrySet());
+        else entryList = Sorting(data, DescendingOrAscending); 
+        if(columns>0){
+            for(int i=entryList.size()-1;i>=columns;i--){
+                entryList.remove(i);
+            }
+        }
+        //assign the value to the chart
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName(nameOfData);
+        for (Map.Entry<String, Double> entry : entryList) {
+            series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+        }
+        return series;
+    }
+    public static void sleep(int second){
+         try {
+            Thread.sleep(1000*second);
+        } catch (InterruptedException e) {
+            io.printErrorMessage("sleep in DataControl", e.getMessage());
         }
     }
 }

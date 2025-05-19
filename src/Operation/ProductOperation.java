@@ -1,33 +1,27 @@
 package Operation;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 
 //import com.google.gson.Gson;
-import java.util.Map;
 
-import javax.xml.crypto.Data;
 
 import Controller.DataControl;
 
 import Model.Product;
 import Model.ProductListResult;
-
-import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
 
 
 public class ProductOperation {
@@ -118,15 +112,89 @@ public class ProductOperation {
         return DataControl.readAllProducts().get(index);
     }
     public void generateCategoryFigure() {
-        CategoryFigure.showChart();
+        //CategoryFigure.showChart();
+        Platform.runLater(() -> {
+            Stage stage = new Stage();
+            stage.setTitle("Products by Category");
+            BarChart<String,Number> barChart = DataControl.creataBarChart("Number of Products per Category", "Category", "Number of Products");
+
+            List<Integer> arr = new ArrayList<>();
+            for(int i =0;i<DataControl.readAllProducts().size();i++){
+                arr.add(1);
+            }
+            barChart.getData().add(DataControl.assignValueToBarChart("Category Count", DataControl.readAllProductsPart("category"), arr, "descending",0));
+            StackPane root = new StackPane(barChart);
+            DataControl.showGraph(root, stage);
+            DataControl.saveGraph("category_figure", stage.getScene());
+        });
     }
     public void generateDiscountFigure() {
-        DiscountFigure.showChart();
+        //DiscountFigure.showChart();
+        Platform.runLater(() -> {
+            Stage stage = new Stage();
+            int low = 0;
+            int medium = 0;
+            int high = 0;
+            List<String> discountString = DataControl.readAllProductsPart("discount");
+            for(String dis : discountString){
+                Double discount = Double.parseDouble(dis);
+                if(discount<30) low++;
+                else if(discount<60) medium++;
+                else high++;
+            }
+            PieChart pieChart = new PieChart();
+            pieChart.setTitle("Discount distribution");
+            if(low>0) pieChart.getData().add(new PieChart.Data("< 30%", low));
+            if(medium>0) pieChart.getData().add(new PieChart.Data("30% - 60%", medium));
+            if(high>0) pieChart.getData().add(new PieChart.Data("> 60%", high));
+            StackPane root = new StackPane(pieChart);
+            DataControl.showGraph(root, stage);
+            DataControl.saveGraph("Discount_Distribution", stage.getScene());
+        });
     }
     public void generateLikesCountFigure() {
-        LikesCountFigure.showChart();
+        // LikesCountFigure.showChart();
+        Platform.runLater(() -> {
+            Stage stage = new Stage();
+            stage.setTitle("Likes count of each category");
+            BarChart<String, Number> barChart = DataControl.creataBarChart("Number of likes per category", "category", "number of likes");
+        
+            List<Integer> arr = new ArrayList<>();
+            List<String> like = DataControl.readAllProductsPart("likes_counts");
+            for(int i=0;i<DataControl.readAllProducts().size();i++){
+                arr.add(Integer.parseInt(like.get(i)));
+            }
+            barChart.getData().add(DataControl.assignValueToBarChart("Likes count",DataControl.readAllProductsPart("category"),arr,"ascending",0));
+            StackPane root = new StackPane(barChart);
+            DataControl.showGraph(root, stage);
+            DataControl.saveGraph("Likes_count_figure", stage.getScene());
+        });
     }
     public void generateDiscountLikesCountFigure(){
-        DiscountLikeChart.showChart();
+        // DiscountLikeChart.showChart();
+        Platform.runLater(() -> {
+            Stage stage = new Stage();
+            stage.setTitle("Discount vs Likes Count");
+
+            NumberAxis xAxis = new NumberAxis();
+            xAxis.setLabel("Discount (%)");
+
+            NumberAxis yAxis = new NumberAxis();
+            yAxis.setLabel("Likes count");
+
+            ScatterChart<Number, Number> scatterChart = new ScatterChart<>(xAxis, yAxis);
+            scatterChart.setTitle("Discount vs Likes Count");
+            XYChart.Series<Number, Number> series = new XYChart.Series<>();
+            series.setName("Discount vs Likes");
+
+            List<Product> products = DataControl.readAllProducts();
+            for (Product p : products) {
+                series.getData().add(new XYChart.Data<>(p.getProDiscount(), p.getProLikesCount()));
+            }
+            scatterChart.getData().add(series);
+            StackPane root = new StackPane(scatterChart);
+            DataControl.showGraph(root, stage);
+            DataControl.saveGraph("discount_vs_likes", stage.getScene());
+        });
     }
 }

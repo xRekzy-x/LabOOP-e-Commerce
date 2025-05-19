@@ -16,9 +16,10 @@ public class AdminOperation {
         return instance;
     }
 public void registerAdmin(){
+    UserOperation userOp = UserOperation.getInstance();
     String userRegisterTime = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(new Date());
-    Admin admin1 = new Admin("u_0000000001", "ADMIN", "aAa2aAa", userRegisterTime);
-    DataControl.addLine("users",this);
+    Admin admin1 = new Admin("u_0000000001", "ADMIN", userOp.encryptPassword("dangtoicao123"), userRegisterTime);
+    DataControl.addLine("users",admin1);
     // try (BufferedWriter writer = new BufferedWriter(new FileWriter("data\\users.txt", true))) { 
     //     writer.write(admin1.toString());  // Convert user object to string and write
     //     writer.newLine();        // Add a new line after each user's data     

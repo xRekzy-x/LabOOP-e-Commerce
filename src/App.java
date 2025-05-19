@@ -1,12 +1,9 @@
-import Controller.DataControl;
 import Operation.*;
-import javafx.application.Platform;
 
 public class App {
     public static void main(String[] args) throws Exception {
         UserOperation userOp = UserOperation.getInstance();
         CustomerOperation cusOp = CustomerOperation.getInstance();
-        AdminOperation adminOp = AdminOperation.getInstance();
         ProductOperation proOp = ProductOperation.getInstance();
         // //User.getAllUsers().clear();
         // Customer.getAllCustomers().clear();
@@ -74,18 +71,34 @@ public class App {
 
         // Customer user3 = new Customer("u_1234512345", "UserZero", "@!aA2",
         // "01-01-2000_00:00:00", "p1@kk.kk", "0303030301");
-
+        System.out.println("delete");
         System.out.println(cusOp.deleteCustomer("u_3131157014"));
         // proOp.extractProductsFromFile();
         // System.out.println(proOp.getProductList(1));
         // System.out.println(cusOp.getCustomerList(1));
         // System.out.println(proOp.deleteProduct("p021"));
-        System.out.println(proOp.getProductById("p006"));
+        
+        //System.out.println(proOp.getProductById("p006"));
 
+        new Thread(() -> AllStatiscalFigure.launch()).start();
+        try {
+        Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        e.printStackTrace();
+        }
         //proOp.generateCategoryFigure();
-        // proOp.generateDiscountFigure();
-        // proOp.generateLikesCountFigure();
-        // proOp.generateDiscountLikesCountFigure();
+        //proOp.generateDiscountFigure();
+        //proOp.generateLikesCountFigure();
+        proOp.generateDiscountLikesCountFigure();
+
+        //orderOp.generateAllCustomersConsumptionFigure();
+        //orderOp.generateSingleCustomerConsumptionFigure("u_1138910227");
+        //orderOp.generateAllTop10BestSellersFigure();
+        
+
+        //System.out.println(orderOp.createAnOrder("u_1212121212", "p022", null));
+        //System.out.println(orderOp.getOrderList("u_1212121212", 1));
+        //orderOp.generateTestOrderData();
 
     }
 }

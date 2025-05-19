@@ -18,5 +18,3 @@
 "pro_id":"p018","pro_model":"LGC1","pro_category":"TV","pro_name":"LG C1 65-inch OLED 4K TV","pro_current_price":"1799.99","pro_raw_price":"2499.99","pro_discount":"28.0","pro_likes_counts":"153"}
 "pro_id":"p019","pro_model":"SamsungQN90A","pro_category":"TV","pro_name":"Samsung QN90A 55-inch Neo QLED 4K TV","pro_current_price":"1299.99","pro_raw_price":"1799.99","pro_discount":"27.78","pro_likes_counts":"127"}
 "pro_id":"p020","pro_model":"SonySRS-XB33","pro_category":"Speaker","pro_name":"Sony SRS-XB33 Portable Bluetooth Speaker","pro_current_price":"99.99","pro_raw_price":"149.99","pro_discount":"33.33","pro_likes_counts":"56"}
-"pro_id":"p021","pro_model":"SamsungQN90A","pro_category":"TV","pro_name":"Samsung QN90A 55-inch Neo QLED 4K TV","pro_current_price":"1299.99","pro_raw_price":"1799.99","pro_discount":"27.78","pro_likes_counts":"127"}
-

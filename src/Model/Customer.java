@@ -1,12 +1,5 @@
 package Model;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import Controller.DataControl;
 import Operation.CustomerOperation;
 
 public class Customer extends User {
@@ -17,7 +10,7 @@ public class Customer extends User {
         super(userId,userName,userPassword,userRegisterTime,"customer");
         if(!cusOp.validateEmail(userEmail)){
             throw new IllegalArgumentException(" An email address\r\n" + //
-                                " * consists of username@domain.extension format.");}
+                                " * consists of username@domain.extension format instead of "+userEmail);}
             this.userEmail=userEmail;
         if(!cusOp.validateMobile(userMobile)){
             throw new IllegalArgumentException("The mobile number\r\n" + //

@@ -7,15 +7,13 @@ import Controller.DataControl;
 
 public class ProductListResult {
     private List<Product> ProductEachPage = new ArrayList<>();
-    private int currentPage;
-    private int totalPages;
     public ProductListResult(){}
     public String toString(){
         StringBuilder content= new StringBuilder();
         for(int i =0;i<ProductEachPage.size();i++){
             content.append("\n ("+(i+1)+") "+ProductEachPage.get(i).toString());
         }
-        content.append("\n"+getCurrentPage()+"/"+getTotalPages());
+        //content.append("\n"+getCurrentPage()+"/"+getTotalPages());
         return content.toString();
     }
     public Product getProduct(String productName){

@@ -1,27 +1,16 @@
 package Operation;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import Controller.DataControl;
+import IOInterface.IOInterface;
 import Model.Customer;
 import Model.CustomerListResult;
 import Model.User;
 
-import java.text.SimpleDateFormat;
 
 public class CustomerOperation {
     UserOperation userOp=UserOperation.getInstance();
+    IOInterface io = IOInterface.getInstance();
     private static CustomerOperation instance;
     private CustomerOperation(){}
     public synchronized static CustomerOperation getInstance(){
@@ -39,6 +28,7 @@ public class CustomerOperation {
     }
     public boolean registerCustomer(String userName,String userPassword,String userEmail,String userMobile){
         UserOperation userOp = UserOperation.getInstance();
+
         if(userOp.validateUsername(userName)&&
             userOp.validatePassword(userPassword)&&
             validateEmail(userEmail)&&
@@ -48,9 +38,15 @@ public class CustomerOperation {
             }
             else{
                 String userId=userOp.generateUniqueUserId();
-                String userRegisterTime = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(new Date());
-                Customer customer = new Customer(userId, userName, userPassword, userRegisterTime, userEmail, userMobile);
-                DataControl.addLine("users",customer);
+                String userRegisterTime = DataControl.getCurrentTime();
+                try{
+                    Customer customer = new Customer(userId, userName, userOp.encryptPassword(userPassword), userRegisterTime, userEmail, userMobile);
+                    DataControl.addLine("users",customer);
+                }
+                catch(IllegalArgumentException e){
+                    io.printErrorMessage("registerCustomer", e.getMessage());
+                }
+               
                 return true;
             }
         }
@@ -59,20 +55,49 @@ public class CustomerOperation {
     public boolean updateProfile(String attributeName,String value,Customer customerObject){
         switch (attributeName) {
             case "userName":
-                customerObject.setUserName(value);
-                return true;
+                List<String>allUsers=DataControl.readAllUsersPart("name");
+                if(allUsers.contains(value)) return false;
+                else{
+                    try{
+                        customerObject.setUserName(value);
+                        return true;
+                    }catch(IllegalArgumentException e){
+                        io.printErrorMessage("updateProfile", e.getMessage());
+                        return false;
+                    }
+                }
             case "userPassword":
-                customerObject.setUserPassword(value);
-                return true;
+                    try{
+                        customerObject.setUserPassword(value);
+                        return true;
+                    }catch(IllegalArgumentException e){
+                        io.printErrorMessage("updateProfile", e.getMessage());
+                        return false;
+                    }
             case "userId":
-                customerObject.setUserID(value);
-                return true;
+                try{
+                    customerObject.setUserID(value);
+                    return true;
+                }catch(IllegalArgumentException e){
+                    io.printErrorMessage("updateProfile", e.getMessage());
+                    return false;
+                }
             case "userEmail":
-                customerObject.setUserEmail(value);
-                return true;
+                try{
+                    customerObject.setUserEmail(value);
+                    return true;
+                }catch(IllegalArgumentException e){
+                    io.printErrorMessage("updateProfile", e.getMessage());
+                    return false;
+                }
             case "userMobile":
-                customerObject.setUserMobile(value);
-                return true;
+                try{
+                    customerObject.setUserMobile(value);
+                    return true;
+                }catch(IllegalArgumentException e){
+                    io.printErrorMessage("updateProfile", e.getMessage());
+                    return false;
+                }
             default:
                 break;
         }
@@ -94,6 +119,12 @@ public class CustomerOperation {
         return cusList;
     }
     public void deleteAllCustomer(){
-        DataControl.deleteAll("users");
+        List<User> allAdmins= DataControl.readAllUsers();
+        for(User user:allAdmins){
+            if(user.getUserRole()=="customer"){
+                deleteCustomer(user.getUserID());
+            }
+        }
+        //DataControl.deleteAll("users");
     }
 }

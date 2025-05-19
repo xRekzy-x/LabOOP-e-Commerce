@@ -1,6 +1,5 @@
 package Model;
 
-import Controller.DataControl;
 
 public class Admin extends User {
     public Admin(String userId,String userName, String userPassword,String userRegisterTime){
